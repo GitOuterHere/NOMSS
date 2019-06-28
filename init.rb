@@ -21,7 +21,6 @@ get '/api/v1/warehouse/product' do
 end
 
 # GET all orders
-# TODO Need API for unfillable orders
 get '/api/v1/warehouse/order' do
   FulfilmentManager.new.getOrders.to_json
 end

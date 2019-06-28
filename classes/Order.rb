@@ -10,11 +10,10 @@ require_relative 'Item.rb'
 class Order
   attr_reader :orderId, :status, :dateCreated, :items
 
-  # Status Constants - TODO: Investigate include Enumerable
+  # Status Constants
   PENDING = 'Pending'
   FULFILLED = 'Fulfilled'
-
-  # TODO Implement enum for order Status
+  ERROR = 'Error: Unfulfillable'
 
   def initialize(orderId, status, dateCreated, items)
       @orderId = orderId
@@ -23,7 +22,7 @@ class Order
       self.parseItems(items)
   end
 
-  # This really should be provided by a framework somewhere.... <sigh>
+  # This ideally should be provided by a framework or mapping layer
   def to_json(options={})
 
     {'orderId' => @orderId,
@@ -38,19 +37,16 @@ class Order
     @status = Order::FULFILLED
   end
 
+  # Updates the Order status of this order to Error: Unfulfillable
+  def setStatusError
+    @status = Order::ERROR
+  end
+
 # protected
 
   # Convert JSON array to array of objects
-  #
-  # Note I wanted to make this protected but then would have to do funky things
-  # to unit test it (like using "send" ?)
   def parseItems(arrItems)
     @items = arrItems.map { |item| Item.new(item['orderId'],
     item['productId'], item['quantity'], item['costPerItem']) }
-    #arrItems.each do |itm|
-    #  @items = Array.new
-    #  @items << Item.new(itm['orderId'],
-    #  itm['productId'], itm['quantity'], itm['costPerItem'])
-    #end
   end
 end

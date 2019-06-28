@@ -1,4 +1,4 @@
-# Item for the NOMSS.
+# Order Item for the NOMSS.
 #
 # Responsible for fulfilment item functions.
 # Release History:
@@ -16,7 +16,7 @@ class Item
       @costPerItem = costPerItem
   end
 
-  # This really should be provided by a framework somewhere.... <sigh>
+  # This ideally should be provided by a framework or mapping layer
   def to_json(options={})
 
       {'orderId' => @orderId,
@@ -25,7 +25,4 @@ class Item
        'costPerItem' => @costPerItem}.to_json
   end
 
-  def testMe
-
-  end
 end

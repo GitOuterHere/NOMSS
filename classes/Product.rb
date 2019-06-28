@@ -18,7 +18,7 @@ class Product
       @deliveryLeadTime = deliveryLeadTime
   end
 
-  # This really should be provided by a framework somewhere.... <sigh>
+  # This ideally should be provided by a framework or mapping layer
   def to_json(options={})
       {'productId' => @productId,
        'description' => @description,

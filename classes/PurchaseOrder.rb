@@ -13,14 +13,11 @@ class PurchaseOrder
       @quantity = quantity
   end
 
-  # This really should be provided by a framework somewhere.... <sigh>
+  # This ideally should be provided by a framework or mapping layer
   def to_json(options={})
       {'dateCreated' => @dateCreated,
        'productId' => @productId,
        'quantity' => @quantity}.to_json
   end
 
-  def testMe
-
-  end
 end

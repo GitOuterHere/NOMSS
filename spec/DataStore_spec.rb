@@ -1,4 +1,4 @@
-# DataSource Unit test - WIP
+# DataSource Unit test
 #
 require_relative '../classes/DataStore.rb'
 

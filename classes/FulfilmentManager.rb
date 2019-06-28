@@ -39,9 +39,10 @@ class FulfilmentManager
         order = getOrder(orderId)
         if orderFillable?(order)
           fillOrder(order)
-          checkInventory()
+          checkInventory
         else
           unfulfillable << order.orderId
+          order.setStatusError
         end
       end #Synchronize
     end
@@ -101,7 +102,8 @@ class FulfilmentManager
     order.items.each do |itm|
       product = DataStore.instance.getProduct(itm.productId)
       if product.quantityOnHand < itm.quantity
-        # Cant happen on validated order ! TODO: throw exception
+        # Cant happen on validated order ! throw exception
+        raise Exception.new "System Error: Order #{order.orderId} Insufficient stock."
       else
         product.decrementQuantityOnHand(itm.quantity)
       end
@@ -111,8 +113,8 @@ class FulfilmentManager
 
   # Do an inventory check and raise Purchase Orders if needed
   def checkInventory
-    # Check if purchase order needed. Do not restock if there is a
-    # preexisting purchase orders
+    # Check if purchase order needed. Do not restock if there are
+    # preexisting purchase orders for a product
     products = DataStore.instance.products
     products.each do |prod|
       if prod.quantityOnHand < prod.reorderThreshold
@@ -122,19 +124,4 @@ class FulfilmentManager
     end
   end
 
-protected
-  # Update the Product stock quantity
-  def updateStockQuantity
-
-  end
-
-  # Create a new purchase order
-  def createPurchaseOrder
-
-  end
-
-  # Update the order status
-  def updateOrderStatus
-
-  end
 end

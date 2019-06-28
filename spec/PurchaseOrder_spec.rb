@@ -1,8 +1,8 @@
-# PurchaseOrder Unit test - WIP
+# PurchaseOrder Unit test
 #
 require_relative '../classes/PurchaseOrder.rb'
 
-# Test Cases in progress
+# For future use
 describe '#testMe' do
   it "should do something sensible" do
     pord = PurchaseOrder.new(nil,nil,nil,nil)
