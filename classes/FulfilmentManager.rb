@@ -11,60 +11,129 @@ class FulfilmentManager
   attr_accessor :products, :orders
 
   def initialize
-    # Retrieve the one and only for later unit of work operations
+    # Retrieve the one and only data source
     @semaphore = DataStore.instance.semaphore
   end
 
-  # TODO: Implement
-  def fulfilOrders(orderIds)
+  # Attempt to fulfill list of requested orders
+  #
+  # Orders that can be fulfilled are executed.
+  # An map of OrderIds which could not be fulfilled is returned - this may
+  # be empty if all orders had been fulfilled.
+  #
+  def fulfillOrders(orderRequest)
 
-    unfillable = Array.new
+    unfulfillable = Array.new
+    orders = orderRequest['orderIds']
 
-    orderIds.each do |orderId|
-      puts "The current item + 2 is #{orderId}."
+    # Design decision to synchronize for each order within this request.
+    # This should give other threads (other user/session requests) the
+    # opportunity to execute their orders concurrently at the order level
+    orders.each do |orderId|
       @semaphore.synchronize do
         # For each order (Synchronized block)
         # => Lookup order details
-        #   => If Status Not 'Pending' - flag warning (?) - fail this order 'unfillable'
+        #   => If Status Not 'Pending' - flag warning - fail this order 'unfillable'
         #   => Confirm all order products are fillable, if quantity is not available - fail this order 'unfillable'
         #   => Fill the order (Update order status, update inventory, re-order stock if needed)
-        order = Self.getOrder(orderId)
+        order = getOrder(orderId)
+        if orderFillable?(order)
+          fillOrder(order)
+          checkInventory()
+        else
+          unfulfillable << order.orderId
+        end
+      end #Synchronize
+    end
+    {"unfulfillable" => unfulfillable}
+  end
 
+  # Return all products
+  def getProducts
+    DataStore.instance.products
+  end
+
+  # Return all Orders
+  def getOrders
+    DataStore.instance.orders
+  end
+
+  # Return order by Id
+  def getOrder(orderId)
+    DataStore.instance.getOrder(orderId)
+  end
+
+  # Return all purchase orders
+  def getPurchaseOrders
+    DataStore.instance.purchaseOrders
+  end
+
+  # Validate that the entire order is fillable
+  def orderFillable?(order)
+    fillable = true
+
+    if order.status != Order::PENDING
+      # Only Pending orders can be filled
+      fillable = false
+    elsif !itemsFillable?(order.items)
+      # Verify all order items are Fillable
+      fillable = false
+    end
+    fillable
+  end
+
+  # Validate that an orders items are fillable
+  def itemsFillable?(items)
+    fillable = true
+
+    items.each do |itm|
+      product = DataStore.instance.getProduct(itm.productId)
+      if product.quantityOnHand < itm.quantity
+        fillable = false
+        break
+      end
+    end
+    fillable
+  end
+
+  # Fill a validated order
+  def fillOrder(order)
+    order.items.each do |itm|
+      product = DataStore.instance.getProduct(itm.productId)
+      if product.quantityOnHand < itm.quantity
+        # Cant happen on validated order ! TODO: throw exception
+      else
+        product.decrementQuantityOnHand(itm.quantity)
+      end
+    end
+    order.setStatusFulfilled
+  end
+
+  # Do an inventory check and raise Purchase Orders if needed
+  def checkInventory
+    # Check if purchase order needed. Do not restock if there is a
+    # preexisting purchase orders
+    products = DataStore.instance.products
+    products.each do |prod|
+      if prod.quantityOnHand < prod.reorderThreshold
+        # reorder
+        DataStore.instance.createPurchaseOrder(prod.productId, prod.reorderAmount)
       end
     end
   end
 
-  # TODO: Implement
-  def getProducts
-
-  end
-
-  # TODO: Implement
-  def getOrders
-
-  end
-
-  # TODO: Implement
-  def getOrder(orderId)
-
-  end
-  # TODO: Implement
-  def getPurchaseOrders
-
-  end
-
 protected
-  # TODO: Implement
+  # Update the Product stock quantity
   def updateStockQuantity
 
   end
 
-  # TODO: Implement
+  # Create a new purchase order
   def createPurchaseOrder
 
   end
 
-  # TODO: Implement
+  # Update the order status
   def updateOrderStatus
 
   end

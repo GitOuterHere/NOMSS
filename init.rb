@@ -8,28 +8,30 @@ require 'sinatra'
 require 'json'
 require_relative 'classes/FulfilmentManager.rb'
 
-# Dir[settings.root + "/classes/*.rb"].each {|file| require file}
-
-get '/api/v1/warehouse/product' do
-  apiMgr = FulfilmentManager.new
-
-  response = DataStore.instance.products[0].to_json
+# Fulfill a list of orders
+post '/api/v1/warehouse/fulfilment' do
+  FulfilmentManager.new.fulfillOrders(JSON.parse(request.body.read)).to_json
 end
 
+# Helper Operations follow
+
+# GET all Products
+get '/api/v1/warehouse/product' do
+  FulfilmentManager.new.getProducts.to_json
+end
+
+# GET all orders
 # TODO Need API for unfillable orders
 get '/api/v1/warehouse/order' do
-  apiMgr = FulfilmentManager.new
-
-  response = DataStore.instance.products[0].to_json
+  FulfilmentManager.new.getOrders.to_json
 end
 
+# GET an order
+get '/api/v1/warehouse/order/:orderId' do
+  FulfilmentManager.new.getOrder(params['orderId']).to_json
+end
+
+# GET all Purchase Orders
 get '/api/v1/warehouse/purchaseOrder' do
-  apiMgr = FulfilmentManager.new
-
-  response = DataStore.instance.products[0].to_json
-end
-
-post '/api/v1/warehouse/fulfilment' do
-  apiMgr = FulfilmentManager.new
-
+  FulfilmentManager.new.getPurchaseOrders.to_json
 end

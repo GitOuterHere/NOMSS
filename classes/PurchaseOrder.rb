@@ -5,13 +5,19 @@
 # 27/06/19 DMG
 
 class PurchaseOrder
-  attr_reader :orderId, :dateCreated, :productId, :quantity
+  attr_reader :dateCreated, :productId, :quantity
 
-  def initialize(orderId, dateCreated, productId, quantity)
-      @orderId = orderId
+  def initialize(dateCreated, productId, quantity)
       @dateCreated = dateCreated
       @productId = productId
       @quantity = quantity
+  end
+
+  # This really should be provided by a framework somewhere.... <sigh>
+  def to_json(options={})
+      {'dateCreated' => @dateCreated,
+       'productId' => @productId,
+       'quantity' => @quantity}.to_json
   end
 
   def testMe

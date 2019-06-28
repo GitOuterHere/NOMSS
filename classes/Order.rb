@@ -10,6 +10,10 @@ require_relative 'Item.rb'
 class Order
   attr_reader :orderId, :status, :dateCreated, :items
 
+  # Status Constants - TODO: Investigate include Enumerable
+  PENDING = 'Pending'
+  FULFILLED = 'Fulfilled'
+
   # TODO Implement enum for order Status
 
   def initialize(orderId, status, dateCreated, items)
@@ -19,15 +23,21 @@ class Order
       self.parseItems(items)
   end
 
-  # TODO: Implement
-  def updateOrderStatus(orderId, orderStatus)
+  # This really should be provided by a framework somewhere.... <sigh>
+  def to_json(options={})
+
+    {'orderId' => @orderId,
+     'status' => @status,
+     'dateCreated' => @dateCreated,
+     'items' => @items}.to_json
 
   end
 
-  # TODO: Implement
-  def getOrder(orderId)
-
+  # Updates the Order status of this order to fulfilled
+  def setStatusFulfilled
+    @status = Order::FULFILLED
   end
+
 # protected
 
   # Convert JSON array to array of objects
@@ -35,10 +45,12 @@ class Order
   # Note I wanted to make this protected but then would have to do funky things
   # to unit test it (like using "send" ?)
   def parseItems(arrItems)
-    arrItems.each do |itm|
-      @items = Array.new
-      @items << Item.new(itm['orderId'],
-      itm['productId'], itm['quantity'], itm['costPerItem'])
-    end
+    @items = arrItems.map { |item| Item.new(item['orderId'],
+    item['productId'], item['quantity'], item['costPerItem']) }
+    #arrItems.each do |itm|
+    #  @items = Array.new
+    #  @items << Item.new(itm['orderId'],
+    #  itm['productId'], itm['quantity'], itm['costPerItem'])
+    #end
   end
 end

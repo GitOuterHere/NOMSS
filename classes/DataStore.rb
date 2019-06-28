@@ -13,11 +13,10 @@ require_relative 'PurchaseOrder.rb'
 class DataStore
   include Singleton
 
-  # TODO: Although reader, should return deep copies instead?
   attr_reader :products, :orders, :purchaseOrders, :semaphore
 
   # Singleton constructor. Reads the data file representing a starting
-  # point snapshot for this data source. Parses the JSON content to
+  # point snapshot for this data source. Parses the file JSON content to
   # object representations
   def initialize
     # Single semaphore for use in critical sections
@@ -28,20 +27,41 @@ class DataStore
     json = file.read
     file.close
 
-    # TODO : Add Limit for parse depth
+    # Parse content
     parsed = JSON.parse(json)
     @products = parsed['products']
-    @products.map { |prod| Product.new(prod['productId'],
+    @products.map! { |prod| Product.new(prod['productId'],
       prod['description'], prod['quantityOnHand'], prod['reorderThreshold'],
       prod['reorderAmount'], prod['deliveryLeadTime']) }
     @orders = parsed['orders']
-    @orders.map { |ord| Order.new(ord['orderId'],
+    @orders.map! { |ord| Order.new(ord['orderId'],
       ord['status'], ord['dateCreated'], ord['items']) }
+    @purchaseOrders = Array.new
   end
 
-  # TODO: Implement json load and accessors for products and orders
-  def testMe
-    return "hello"
+  # Get an Order by Id
+  # Returns nil if order is not found
+  def getOrder(id)
+    @orders.find {|ord| ord.orderId.to_i == id.to_i}
   end
 
+  # Get a Product by Id
+  # Returns nil if product is not found
+  def getProduct(id)
+    @products.find {|prod| prod.productId.to_i == id.to_i}
+  end
+
+  # Create a new purchase order.
+  #
+  # Returns True if a new PO was created and False otherwise (if a PO already
+  # exists).
+  def createPurchaseOrder(productId, orderAmount)
+    created = false
+    existingOrder = @purchaseOrders.find {|ord| ord.productId.to_i == productId.to_i}
+    if existingOrder == nil
+      @purchaseOrders << PurchaseOrder.new(Time.now, productId, orderAmount)
+      created = true
+    end
+    created
+  end
 end
