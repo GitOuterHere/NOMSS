@@ -30,12 +30,16 @@ class DataStore
     # Parse content
     parsed = JSON.parse(json)
     @products = parsed['products']
-    @products.map! { |prod| Product.new(prod['productId'],
-      prod['description'], prod['quantityOnHand'], prod['reorderThreshold'],
-      prod['reorderAmount'], prod['deliveryLeadTime']) }
+    if @products
+      @products.map! { |prod| Product.new(prod['productId'],
+        prod['description'], prod['quantityOnHand'], prod['reorderThreshold'],
+        prod['reorderAmount'], prod['deliveryLeadTime']) }
+    end
     @orders = parsed['orders']
-    @orders.map! { |ord| Order.new(ord['orderId'],
-      ord['status'], ord['dateCreated'], ord['items']) }
+    if @orders
+      @orders.map! { |ord| Order.new(ord['orderId'],
+        ord['status'], ord['dateCreated'], ord['items']) }
+    end
     @purchaseOrders = Array.new
   end
 

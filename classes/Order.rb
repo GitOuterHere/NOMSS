@@ -42,11 +42,11 @@ class Order
     @status = Order::ERROR
   end
 
-# protected
-
   # Convert JSON array to array of objects
   def parseItems(arrItems)
-    @items = arrItems.map { |item| Item.new(item['orderId'],
-    item['productId'], item['quantity'], item['costPerItem']) }
+    if arrItems
+      @items = arrItems.map { |item| Item.new(item['orderId'],
+      item['productId'], item['quantity'], item['costPerItem']) }
+    end
   end
 end
