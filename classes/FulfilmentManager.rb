@@ -39,11 +39,12 @@ class FulfilmentManager
         order = getOrder(orderId)
         if orderFillable?(order)
           fillOrder(order)
-          checkInventory
         else
           unfulfillable << order.orderId
           order.setStatusError
         end
+        # Always run stock level check
+        checkInventory
       end #Synchronize
     end
     {"unfulfillable" => unfulfillable}
